@@ -23,6 +23,12 @@ export default function QuinceInvitation() {
     new URL('./assets/drive-download-20251022T211739Z-1-001/DSC03364.JPG', import.meta.url).href
   ];
 
+  // Background images
+  const bgMobile = new URL('./assets/drive-download-20251022T211739Z-1-001/DSC03333.JPG', import.meta.url).href;
+  const bgDesktop = new URL('./assets/drive-download-20251022T211739Z-1-001/DSC03404.JPG', import.meta.url).href;
+  const bgCover = new URL('./assets/drive-download-20251022T211739Z-1-001/DSC03294.JPG', import.meta.url).href;
+  const bgParallax = new URL('./assets/drive-download-20251022T211739Z-1-001/DSC03362.JPG', import.meta.url).href;
+
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 400);
   
   useEffect(() => {
@@ -51,9 +57,7 @@ export default function QuinceInvitation() {
       minHeight: '100vh',
       position: 'relative',
       overflow: 'hidden',
-      backgroundImage: isMobile 
-        ? 'url(/src/assets/drive-download-20251022T211739Z-1-001/DSC03333.JPG)'
-        : 'url(/src/assets/drive-download-20251022T211739Z-1-001/DSC03404.JPG)',
+      backgroundImage: `url(${isMobile ? bgMobile : bgDesktop})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
@@ -95,7 +99,7 @@ export default function QuinceInvitation() {
       left: 0,
       right: 0,
       height: '50%',
-      backgroundImage: 'url(/src/assets/drive-download-20251022T211739Z-1-001/DSC03294.JPG)',
+      backgroundImage: `url(${bgCover})`,
       backgroundSize: 'cover',
       transition: 'transform 1s ease-in-out'
     },
@@ -645,7 +649,7 @@ export default function QuinceInvitation() {
               height: '70vh',
               marginLeft: 'calc(50% - 50vw)',
               marginRight: 'calc(50% - 50vw)',
-              backgroundImage: 'url(/src/assets/drive-download-20251022T211739Z-1-001/DSC03362.JPG)',
+              backgroundImage: `url(${bgParallax})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundAttachment: 'fixed',
