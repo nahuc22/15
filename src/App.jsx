@@ -39,14 +39,14 @@ export default function QuinceInvitation() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const GRID_SIZE = isMobile ? 10 : 9;
+  const GRID_SIZE = 8; // 2x4 = 8 fotos
   const gridItems = Array.from({ length: GRID_SIZE }, (_, i) => galleryImages[i] ?? null);
 
   useEffect(() => {
     if (isOpen) {
       const interval = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-      }, 3000);
+      }, 4000); // Aumentado a 4s para reducir frecuencia de cambios
       return () => clearInterval(interval);
     }
   }, [isOpen, carouselImages.length]);
@@ -226,8 +226,9 @@ export default function QuinceInvitation() {
       objectFit: 'cover',
       objectPosition: 'center',
       imageRendering: 'auto',
-      transition: 'opacity 0.7s',
-      transform: 'scale(0.85)'
+      transition: 'opacity 0.5s ease-in-out',
+      transform: 'scale(0.85)',
+      willChange: 'opacity'
     },
     carouselDots: {
       position: 'absolute',
@@ -282,7 +283,31 @@ export default function QuinceInvitation() {
     eventCard: {
       textAlign: 'center',
       padding: '24px',
-      borderRadius: '12px'
+      borderRadius: '12px',
+      position: 'relative',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      textDecoration: 'none',
+      display: 'block',
+      transition: 'transform 0.2s ease'
+    },
+    eventCardBackground: {
+      position: 'absolute',
+      inset: 0,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      zIndex: 0,
+      opacity: 1
+    },
+    eventCardOverlay: {
+      position: 'absolute',
+      inset: 0,
+      background: 'rgba(255, 255, 255, 0.6)',
+      zIndex: 1
+    },
+    eventCardContent: {
+      position: 'relative',
+      zIndex: 2
     },
     eventCeremony: {
       background: 'linear-gradient(135deg, #fce7f3, #f3e8ff)'
@@ -296,18 +321,19 @@ export default function QuinceInvitation() {
       marginBottom: '8px'
     },
     eventText: {
-      color: '#4b5563',
+      color: '#000000',
       marginBottom: '4px'
     },
     eventLocation: {
       marginTop: '8px',
       fontWeight: '500',
-      color: '#4b5563'
+      color: '#000000',
+      textDecoration: 'none'
     },
     dressCode: {
       textAlign: 'center',
       padding: '24px',
-      background: '#f9fafb',
+      background: 'linear-gradient(135deg, #fce7f3, #f3e8ff)',
       borderRadius: '12px'
     },
     dressCodeTitle: {
@@ -351,23 +377,23 @@ export default function QuinceInvitation() {
     },
     galleryGrid: {
       display: 'grid',
-      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-      gridTemplateRows: isMobile ? 'repeat(5, 1fr)' : 'repeat(3, 1fr)',
-      gap: '16px'
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gridTemplateRows: 'repeat(4, 1fr)',
+      gap: '20px'
     },
     galleryItem: {
       aspectRatio: '1',
       overflow: 'hidden',
       borderRadius: '12px',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-      transition: 'all 0.3s'
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)'
     },
     galleryImage: {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
       objectPosition: 'center',
-      imageRendering: 'auto'
+      imageRendering: 'auto',
+      willChange: 'auto'
     },
     confirmationSection: {
       maxWidth: '640px',
@@ -428,8 +454,8 @@ export default function QuinceInvitation() {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
-        } else {
-          entry.target.classList.remove('visible');
+          // Dejar de observar una vez que se hizo visible
+          observer.unobserve(entry.target);
         }
       });
     }, {
@@ -445,8 +471,9 @@ export default function QuinceInvitation() {
         const viewportH = window.innerHeight || document.documentElement.clientHeight;
         if (rect.top < viewportH * 0.9 && rect.bottom > 0) {
           el.classList.add('visible');
+        } else {
+          observer.observe(el);
         }
-        observer.observe(el);
       });
     }
 
@@ -465,20 +492,26 @@ export default function QuinceInvitation() {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        .reveal-item { opacity: 0; transform: translateY(30px); transition: transform 0.6s ease, opacity 0.6s ease; }
-        .reveal-item.visible { opacity: 1; transform: translateY(0); }
-        .backdrop-image { opacity: 0; transition: opacity 0.8s ease, transform 1s ease; transform: scale(1.02); }
-        .backdrop-image.visible { opacity: 1; transform: scale(1.06); }
+        .reveal-item { 
+          opacity: 0; 
+          transform: translateY(20px); 
+          transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+          will-change: transform, opacity;
+        }
+        .reveal-item.visible { 
+          opacity: 1; 
+          transform: translateY(0);
+          will-change: auto;
+        }
         @media (max-width: 768px) {
           .main-title { font-size: 40px !important; }
           .main-subtitle { font-size: 22px !important; }
           .carousel-container { height: 300px !important; }
           .cover-title { font-size: 36px !important; }
-        }
-        @media (max-width: 400px) {
           .gallery-grid { 
-            grid-template-columns: repeat(2, 1fr) !important; 
-            grid-template-rows: repeat(5, 1fr) !important; 
+            grid-template-columns: 1fr !important;
+            grid-template-rows: auto !important;
+            gap: 12px !important;
           }
         }
       `}</style>
@@ -511,13 +544,11 @@ export default function QuinceInvitation() {
               </svg>
               <h1 style={styles.coverTitle} className="cover-title">Mis XV Años</h1>
               <div style={styles.divider}></div>
-              <p style={styles.coverName}>Vicky Jimenez</p>
+              <p style={styles.coverName}>Victoria Jimenez</p>
               <p style={styles.coverSubtitle}>Te invito a celebrar conmigo</p>
               <button 
                 onClick={() => setIsOpen(true)} 
                 style={styles.openButton}
-                onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
               >
                 Abrir Invitación
               </button>
@@ -531,7 +562,7 @@ export default function QuinceInvitation() {
         <div style={styles.mainContent}>
           {/* Header */}
           <div style={styles.header}>
-            <h1 style={styles.mainTitle} className="main-title">Vicky Jimenez</h1>
+            <h1 style={styles.mainTitle} className="main-title">Vico Jimenez</h1>
             <p style={styles.mainSubtitle} className="main-subtitle">Mis Quince Años</p>
             <div style={styles.headerDivider}></div>
           </div>
@@ -577,25 +608,56 @@ export default function QuinceInvitation() {
               </div>
 
               <div style={styles.eventGrid}>
-                {/* <div style={{...styles.eventCard, ...styles.eventCeremony}}>
-                  <h3 style={styles.eventTitle}>Ceremonia Religiosa</h3>
-                  <p style={styles.eventText}>Sábado 15 de Noviembre</p>
-                  <p style={styles.eventText}>18:00 hrs</p>
-                  <p style={styles.eventLocation}>Parroquia San José</p>
-                </div> */}
+                <a 
+                  href="https://www.google.com/maps/place/Bas%C3%ADlica+Menor+Nuestra+Se%C3%B1ora+de+la+Merced/@-26.8314037,-65.2015878,17z/data=!3m1!4b1!4m6!3m5!1s0x94225c1ab0bd1d43:0x4824e2d900999b32!8m2!3d-26.8314037!4d-65.2015878!16s%2Fg%2F122_gb6t!17m2!4m1!1e3!18m1!1e1?entry=ttu&g_ep=EgoyMDI1MTAyMC4wIKXMDSoASAFQAw%3D%3D" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{...styles.eventCard, ...styles.eventCeremony}}
+                >
+                  {/* Background con blur mínimo - Iglesia */}
+                  <div 
+                    style={{
+                      ...styles.eventCardBackground,
+                      backgroundImage: 'url(https://images.unsplash.com/photo-1519491050282-cf00c82424b4?w=400&q=60&auto=format&fit=crop)'
+                    }}
+                  ></div>
+                  <div style={styles.eventCardOverlay}></div>
+                  
+                  <div style={styles.eventCardContent}>
+                    <h3 style={styles.eventTitle}>Misa</h3>
+                    <p style={styles.eventText}>Viernes 7 de Noviembre</p>
+                    <p style={styles.eventText}>20:00 hrs</p>
+                    <p style={styles.eventLocation}>Basílica Menor Nuestra Señora de la Merced</p>
+                  </div>
+                </a>
 
-                <div style={{...styles.eventCard, ...styles.eventParty}}>
-                  <h3 style={styles.eventTitle}>Fiesta</h3>
-                  <p style={styles.eventText}>Sábado 7 de Noviembre</p>
-                  <p style={styles.eventText}>20:00 hrs</p>
-                  <p style={styles.eventLocation}>Salón de Eventos "El Jardín"</p>
-                </div>
+                <a 
+                  href="https://www.google.com/maps/place/Salon+Las+Ca%C3%B1itas/@-26.822576,-65.123721,17z/data=!3m1!4b1!4m6!3m5!1s0x94225f369911d641:0x50a47809a37b737a!8m2!3d-26.822576!4d-65.123721!16s%2Fg%2F11bw4v4ymd?entry=ttu&g_ep=EgoyMDI1MTAyMC4wIKXMDSoASAFQAw%3D%3D" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{...styles.eventCard, ...styles.eventParty}}
+                >
+                  {/* Background - Fiesta con luces oscuras */}
+                  <div 
+                    style={{
+                      ...styles.eventCardBackground,
+                      backgroundImage: 'url(https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=60&auto=format&fit=crop)'
+                    }}
+                  ></div>
+                  <div style={styles.eventCardOverlay}></div>
+                  
+                  <div style={styles.eventCardContent}>
+                    <h3 style={styles.eventTitle}>Fiesta</h3>
+                    <p style={styles.eventText}>Sábado 8 de Noviembre</p>
+                    <p style={styles.eventText}>22:00 hrs</p>
+                    <p style={styles.eventLocation}>Salón de Eventos "Las Cañitas"</p>
+                  </div>
+                </a>
               </div>
 
               <div style={styles.dressCode}>
-                <h3 style={styles.dressCodeTitle}>Código de Vestimenta</h3>
-                <p style={styles.dressCodeText}>Formal / Elegante</p>
-                <p style={styles.dressCodeNote}>Por favor evitar el color blanco</p>
+                <h3 style={styles.dressCodeTitle}>Dress Code</h3>
+                <p style={styles.dressCodeText}>Elegante</p>
               </div>
             </div>
           </div>
@@ -619,17 +681,9 @@ export default function QuinceInvitation() {
                   style={{
                     ...styles.galleryItem,
                     ...(img ? {} : { background: '#f3f4f6' }),
-                    transitionDelay: `${index * 80}ms`
+                    transitionDelay: `${index * 40}ms`
                   }}
                   className="reveal-item gallery-item"
-                  onMouseOver={img ? (e) => {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.25)';
-                  } : undefined}
-                  onMouseOut={img ? (e) => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)';
-                  } : undefined}
                 >
                   {img && (
                     <img src={img} alt={`Galería ${index + 1}`} style={styles.galleryImage} />
@@ -664,18 +718,10 @@ export default function QuinceInvitation() {
               <h3 style={styles.confirmationTitle}>Confirmar Asistencia</h3>
               <p style={styles.confirmationText}>Por favor confirma tu asistencia antes del 1 de Noviembre</p>
               <a
-                href="https://wa.me/5491112345678?text=Hola!%20Confirmo%20mi%20asistencia%20a%20los%2015%20de%20Sofía"
+                href="https://wa.me/5493816440112?text=Hola!%20Confirmo%20mi%20asistencia%20a%20los%2015%20de%20Vico"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={styles.whatsappButton}
-                onMouseOver={(e) => {
-                  e.target.style.transform = 'scale(1.05)';
-                  e.target.style.boxShadow = '0 10px 25px rgba(236, 72, 153, 0.4)';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.transform = 'scale(1)';
-                  e.target.style.boxShadow = 'none';
-                }}
               >
                 Confirmar por WhatsApp
               </a>
@@ -687,7 +733,7 @@ export default function QuinceInvitation() {
             <svg style={styles.heartIconSmall} viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
-            <p style={styles.footerText}>¡Espero verte ahí!</p>
+            <p style={styles.footerText}>Onfire Producciones</p>
           </div>
         </div>
       )}
